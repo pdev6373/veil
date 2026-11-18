@@ -7,6 +7,7 @@ const TONES = [
   '#c98f7a', '#7d9bb8', '#93a98a', '#c9b27a',
   '#a08bc0', '#7fb0ab', '#b9879e', '#8a93b8',
   '#b8a07f', '#6f8f9e', '#a3a3b8', '#c7a2a2',
+  '#9db3a0', '#b4a3c9', '#d0b38f', '#8fa7c2',
 ];
 
 const FEATURES = [

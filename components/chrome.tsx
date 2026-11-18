@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { playUrl, site } from '@/lib/site';
 import { Logo } from './brand';
+import { MobileMenu } from './client';
 
 export function Nav({ home = true }: { home?: boolean }) {
   return (
@@ -14,12 +15,15 @@ export function Nav({ home = true }: { home?: boolean }) {
         <nav className="nav-links" aria-label="Main">
           {home ? (
             <>
-              <a href="#features">Features</a>
-              <a href="#privacy">Privacy</a>
-              <a href="#faq">Questions</a>
+              <a className="wide-only" href="#features">Features</a>
+              <a className="wide-only" href="#privacy">Privacy</a>
+              <a className="wide-only" href="#faq">Questions</a>
               <a className="pill" href={playUrl}>
                 Get the app
               </a>
+              <MobileMenu>
+                <PlayBadge />
+              </MobileMenu>
             </>
           ) : (
             <Link className="pill" href="/">

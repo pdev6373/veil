@@ -1,6 +1,83 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+
+const MENU_LINKS = [
+  { href: '#features', label: 'Features' },
+  { href: '#calculator', label: 'The calculator' },
+  { href: '#privacy', label: 'Privacy' },
+  { href: '#faq', label: 'Questions' },
+];
+
+/** Full-screen menu for small screens. Escape closes it; focus stays inside while open. */
+export function MobileMenu({ children }: { children?: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    // Focus the dialog itself: keyboard users Tab into the links, touch users see no stray ring.
+    panel.current?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+      if (e.key !== 'Tab' || !panel.current) return;
+      const items = panel.current.querySelectorAll<HTMLElement>('a, button');
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    const btn = button.current;
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+      btn?.focus();
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={button}
+        type="button"
+        className="menu-toggle"
+        aria-expanded={open}
+        aria-controls="mobile-menu"
+        onClick={() => setOpen(true)}
+      >
+        Menu
+      </button>
+      {open && (
+        <div ref={panel} id="mobile-menu" className="menu" role="dialog" aria-modal="true" aria-label="Menu" tabIndex={-1}>
+          <div className="menu-top">
+            <span className="menu-title">Veil</span>
+            <button type="button" className="menu-toggle" onClick={() => setOpen(false)}>
+              Close
+            </button>
+          </div>
+          <nav aria-label="Sections">
+            {MENU_LINKS.map((l, i) => (
+              <a key={l.href} href={l.href} style={{ animationDelay: `${60 + i * 50}ms` }} onClick={() => setOpen(false)}>
+                {l.label}
+              </a>
+            ))}
+          </nav>
+          <div className="menu-foot">{children}</div>
+        </div>
+      )}
+    </>
+  );
+}
 
 const DEMO_PIN = '1284';
 const VAULT_TONES = ['#c98f7a', '#7d9bb8', '#93a98a', '#c9b27a', '#a08bc0', '#7fb0ab', '#b9879e', '#8a93b8'];
