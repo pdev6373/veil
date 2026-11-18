@@ -1,5 +1,8 @@
-import { Footer, Nav, PlayBadge } from '@/components/chrome';
+import type { ReactNode } from 'react';
+
+import { Footer, Header, PlayBadge } from '@/components/chrome';
 import { TryCalculator } from '@/components/client';
+import { Intro, Motion } from '@/components/motion';
 import { site } from '@/lib/site';
 
 // Muted, mineral app tones: the phone shows "apps", not a rainbow.
@@ -7,7 +10,6 @@ const TONES = [
   '#c98f7a', '#7d9bb8', '#93a98a', '#c9b27a',
   '#a08bc0', '#7fb0ab', '#b9879e', '#8a93b8',
   '#b8a07f', '#6f8f9e', '#a3a3b8', '#c7a2a2',
-  '#9db3a0', '#b4a3c9', '#d0b38f', '#8fa7c2',
 ];
 
 const FEATURES = [
@@ -31,12 +33,13 @@ const STEPS = [
   { title: 'Pick a disguise', body: 'Keep the Veil icon, or let it pass for a calculator.' },
 ];
 
+const PRIVACY_STATEMENT =
+  'What you hide stays on your phone. No account. No servers. Your PIN is kept only as a salted hash, and your list of hidden apps never leaves the device.';
+
 const FACTS = [
-  'No account, and no servers of ours',
-  'Your PIN is stored only as a salted hash',
-  'The list of hidden apps is encrypted on your phone',
   'Fingerprints are checked by Android; Veil never sees them',
   'Ads never appear on your home screen or lock screen',
+  'Uninstalling Veil removes everything it stored',
 ];
 
 const FAQ = [
@@ -56,6 +59,8 @@ const FAQ = [
   { q: 'Is Veil free?', a: 'Yes. Ads in the vault and settings pay for it. Extra colour themes unlock with an optional short video.' },
 ];
 
+const MARQUEE = ['Hide apps', 'Pass for a calculator', 'Unlock with a touch', 'Vanish from the drawer', 'Keep your peace'];
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'MobileApplication',
@@ -65,130 +70,203 @@ const jsonLd = {
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 };
 
+/** Masked lines that slide up on reveal. */
+function Lines({ lines }: { lines: ReactNode[] }) {
+  return (
+    <>
+      {lines.map((l, i) => (
+        <span key={i} className="line">
+          <span className="line__inner">{l}</span>
+        </span>
+      ))}
+    </>
+  );
+}
+
+function ChapterHead({ num, title }: { num: string; title: string }) {
+  return (
+    <div className="chapter-head" data-reveal="fade">
+      <span className="chapter-head__num">{num}</span>
+      <span className="chapter-head__title">{title}</span>
+    </div>
+  );
+}
+
+/** Each word becomes a span, so it can light up as it scrolls into view. */
+const Words = ({ text }: { text: string }) => (
+  <>
+    {text.split(' ').map((w, i) => (
+      <span key={i} className="w">
+        {w}{' '}
+      </span>
+    ))}
+  </>
+);
+
 export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Nav />
+      <Intro />
+      <Motion />
+      <Header />
 
-      <main>
-        <section className="hero">
-          <div className="wrap">
-            <div>
-              <h1>
-                Hide apps.
-                <br />
-                Keep your peace.
-              </h1>
-              <p className="lede">
-                Veil keeps your private apps behind a PIN or fingerprint, and can pass for a calculator. Free on
-                Android.
-              </p>
-              <div className="actions">
-                <PlayBadge />
-                <a className="text-link" href="#calculator">
-                  Try the calculator
-                </a>
-              </div>
+      <main id="top">
+        {/* 00 · Hero: type first */}
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero__meta" data-reveal="fade" data-hero>
+            <p className="eyebrow">
+              <span className="dot" aria-hidden="true" />
+              Private by design
+            </p>
+            <p className="eyebrow">Android 7+ · No root · No account</p>
+          </div>
+
+          <h1 className="hero__title" id="hero-title" data-reveal="lines" data-hero>
+            <Lines lines={['Hide apps.', 'Keep your', <em key="p">peace.</em>]} />
+          </h1>
+
+          <div className="hero__bottom" data-reveal="fade" data-hero>
+            <p className="hero__lede">
+              Veil keeps your private apps behind a PIN or fingerprint, and can pass for a calculator. When someone
+              borrows your phone, there is nothing to find.
+            </p>
+            <div className="hero__actions">
+              <PlayBadge />
+              <a href="#vault" className="hero__scroll">
+                <span className="hero__scroll-line" aria-hidden="true" />
+                <span>See how it works</span>
+              </a>
             </div>
+          </div>
+        </section>
 
-            <div className="stage" aria-hidden="true">
+        <div className="marquee" aria-hidden="true">
+          <div className="marquee__track">
+            {[...MARQUEE, ...MARQUEE].map((m, i) => (
+              <span key={i} className="marquee__item">
+                {i % 2 ? <em>{m}</em> : m}
+                <span className="marquee__star">✦</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 01 · The vault */}
+        <section className="chapter" id="vault">
+          <ChapterHead num="01" title="The vault" />
+          <div className="vault">
+            <div>
+              <h2 className="display" data-reveal="lines">
+                <Lines lines={['Out of sight,', <em key="n">never out of reach.</em>]} />
+              </h2>
+              <ol className="rows">
+                {FEATURES.map((f, i) => (
+                  <li key={f.title} className="row" data-reveal="fade">
+                    <span className="row__num">0{i + 1}</span>
+                    <h3>{f.title}</h3>
+                    <p>{f.body}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="phone-wrap" data-reveal="fade" aria-hidden="true">
               <div className="phone">
                 <div className="screen">
                   <div className="island" />
-                  <div className="title">Vault</div>
-                  <div className="sub">{TONES.length} apps hidden</div>
+                  <div className="screen__title">Vault</div>
+                  <div className="screen__sub">{TONES.length} apps hidden</div>
                   <div className="apps">
                     {TONES.map((c) => (
                       <i key={c} style={{ background: c }} />
                     ))}
                   </div>
-                  <div className="add">Hide apps</div>
+                  <div className="screen__add">Hide apps</div>
                 </div>
               </div>
-              <div className="sheer" />
             </div>
           </div>
         </section>
 
-        <section className="section" id="features">
-          <div className="wrap">
-            <h2 className="section-title">Out of sight, never out of reach.</h2>
-            <div className="index">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="index-row">
-                  <h3>{f.title}</h3>
-                  <p>{f.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="section band" id="calculator">
-          <div className="wrap">
+        {/* 02 · The disguise */}
+        <section className="chapter chapter--raised" id="calculator">
+          <ChapterHead num="02" title="The disguise" />
+          <div className="disguise">
             <div>
-              <h2>It can pass for a calculator.</h2>
-              <p>
+              <h2 className="display" data-reveal="lines">
+                <Lines lines={['It can pass for', <em key="c">a calculator.</em>]} />
+              </h2>
+              <p className="body" data-reveal="fade">
                 Switch Veil’s icon and name to Calculator. It does real sums, so nobody thinks twice. Only your PIN,
                 followed by =, opens the vault.
               </p>
-              <p className="hint">
-                Try it: type <kbd>1284</kbd>, then <kbd>=</kbd>.
+              <p className="hint" data-reveal="fade">
+                Try it here: type <kbd>1284</kbd>, then <kbd>=</kbd>
               </p>
             </div>
-            <TryCalculator />
+            <div data-reveal="fade">
+              <TryCalculator />
+            </div>
           </div>
         </section>
 
-        <section className="section" id="how">
-          <div className="wrap">
-            <h2 className="section-title">Private in under a minute.</h2>
-            <ol className="steps">
-              {STEPS.map((s) => (
-                <li key={s.title}>
-                  <h3>{s.title}</h3>
-                  <p>{s.body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
+        {/* 03 · Setup */}
+        <section className="chapter" id="setup">
+          <ChapterHead num="03" title="Setup" />
+          <h2 className="display" data-reveal="lines">
+            <Lines lines={['Private in', <em key="m">under a minute.</em>]} />
+          </h2>
+          <ol className="steps">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="step" data-reveal="fade">
+                <span className="step__num">{i + 1}</span>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
-        <section className="section quiet" id="privacy">
-          <div className="wrap privacy">
-            <div>
-              <h2>What you hide stays on your phone.</h2>
-              <p className="lede">
-                Veil has no accounts and nothing to sync, so there is nothing of yours for us to see.{' '}
-                <a href="/privacy">Read the privacy policy</a>.
-              </p>
-            </div>
+        {/* 04 · Privacy */}
+        <section className="chapter" id="privacy">
+          <ChapterHead num="04" title="Privacy" />
+          <p className="statement" data-reveal="words">
+            <Words text={PRIVACY_STATEMENT} />
+          </p>
+          <div className="privacy__foot">
             <ul className="facts">
               {FACTS.map((f) => (
-                <li key={f}>{f}</li>
+                <li key={f} data-reveal="fade">
+                  {f}
+                </li>
               ))}
             </ul>
+            <a className="header__link privacy__link" href="/privacy" data-reveal="fade">
+              Read the privacy policy
+            </a>
           </div>
         </section>
 
-        <section className="section" id="faq">
-          <div className="wrap">
-            <h2 className="section-title">Questions</h2>
-            <div className="faq">
-              {FAQ.map((f) => (
-                <details key={f.q}>
-                  <summary>{f.q}</summary>
-                  <p>{f.a}</p>
-                </details>
-              ))}
-            </div>
+        {/* 05 · Questions */}
+        <section className="chapter" id="faq">
+          <ChapterHead num="05" title="Questions" />
+          <div className="faq">
+            {FAQ.map((f) => (
+              <details key={f.q} data-reveal="fade">
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
           </div>
         </section>
 
-        <section className="section closing">
-          <div className="wrap">
-            <h2>Draw the veil.</h2>
+        {/* Closing */}
+        <section className="closing" id="get">
+          <h2 className="closing__title" data-reveal="lines">
+            <Lines lines={['Draw', <em key="v">the veil.</em>]} />
+          </h2>
+          <div className="closing__cta" data-reveal="fade">
+            <p>Free on Google Play. Private in under a minute.</p>
             <PlayBadge />
           </div>
         </section>

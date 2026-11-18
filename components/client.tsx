@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 const MENU_LINKS = [
-  { href: '#features', label: 'Features' },
-  { href: '#calculator', label: 'The calculator' },
+  { href: '#vault', label: 'The vault' },
+  { href: '#calculator', label: 'The disguise' },
+  { href: '#setup', label: 'Setup' },
   { href: '#privacy', label: 'Privacy' },
   { href: '#faq', label: 'Questions' },
 ];
@@ -53,16 +54,23 @@ export function MobileMenu({ children }: { children?: ReactNode }) {
         className="menu-toggle"
         aria-expanded={open}
         aria-controls="mobile-menu"
+        aria-label="Open menu"
         onClick={() => setOpen(true)}
       >
-        Menu
+        <span className="menu-toggle__lines" aria-hidden="true">
+          <i />
+          <i />
+        </span>
       </button>
       {open && (
         <div ref={panel} id="mobile-menu" className="menu" role="dialog" aria-modal="true" aria-label="Menu" tabIndex={-1}>
           <div className="menu-top">
             <span className="menu-title">Veil</span>
-            <button type="button" className="menu-toggle" onClick={() => setOpen(false)}>
-              Close
+            <button type="button" className="menu-toggle is-open" aria-label="Close menu" onClick={() => setOpen(false)}>
+              <span className="menu-toggle__lines" aria-hidden="true">
+                <i />
+                <i />
+              </span>
             </button>
           </div>
           <nav aria-label="Sections">
@@ -154,7 +162,7 @@ export function TryCalculator() {
 
   return (
     <div className="calc">
-      <div className="display" aria-live="polite">
+      <div className="calc__screen" aria-live="polite">
         <div className="expr">{result !== null ? expr : ''}</div>
         <div className="value" style={{ fontSize: shown.length > 9 ? 36 : undefined }}>
           {shown}

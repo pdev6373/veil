@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { Footer, Nav } from '@/components/chrome';
+import { Footer, Header } from '@/components/chrome';
 import { site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -13,12 +13,12 @@ export default function PrivacyPage() {
   const mail = `mailto:${site.supportEmail}`;
   return (
     <>
-      <Nav home={false} />
+      <Header home={false} />
       <main className="legal">
-        <div className="wrap">
+        <div>
           <article>
             <h1>Privacy policy</h1>
-            <p className="updated">Last updated {site.privacyUpdated}</p>
+            <p className="eyebrow updated">Last updated {site.privacyUpdated}</p>
 
             <p className="summary">
               Your PIN and the list of apps you hide never leave your phone. Veil has no servers and no accounts. The
