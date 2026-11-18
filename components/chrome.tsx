@@ -5,26 +5,25 @@ import { Logo } from './brand';
 
 export function Nav({ home = true }: { home?: boolean }) {
   return (
-    <header className={`nav${home ? '' : ' scrolled'}`} id="nav">
+    <header className="nav">
       <div className="wrap">
-        <Link className="brand" href="/" aria-label="Veil home">
+        <Link className="wordmark" href="/" aria-label="Veil home">
           <Logo />
-          Veil
+          <span>Veil</span>
         </Link>
         <nav className="nav-links" aria-label="Main">
           {home ? (
             <>
               <a href="#features">Features</a>
-              <a href="#how">How it works</a>
               <a href="#privacy">Privacy</a>
-              <a href="#faq">FAQ</a>
-              <a className="btn" href="#get">
-                Get Veil
+              <a href="#faq">Questions</a>
+              <a className="pill" href={playUrl}>
+                Get the app
               </a>
             </>
           ) : (
-            <Link className="btn ghost" href="/">
-              ← Back to home
+            <Link className="pill" href="/">
+              Back to Veil
             </Link>
           )}
         </nav>
@@ -36,8 +35,8 @@ export function Nav({ home = true }: { home?: boolean }) {
 export function PlayBadge() {
   return (
     <a className="play-badge" href={playUrl} aria-label="Get it on Google Play">
-      {/* eslint-disable-next-line @next/next/no-img-element -- official badge, cropped via CSS */}
-      <img src="/google-play-badge.png" alt="Get it on Google Play" width={217} height={84} />
+      {/* eslint-disable-next-line @next/next/no-img-element -- official badge artwork, cropped via CSS */}
+      <img src="/google-play-badge.png" alt="Get it on Google Play" width={202} height={78} />
     </a>
   );
 }
@@ -46,16 +45,14 @@ export function Footer() {
   return (
     <footer>
       <div className="wrap">
-        <Link className="brand" href="/">
-          <Logo />
-          Veil
-        </Link>
+        <span>
+          © {site.copyrightYear} {site.name}
+        </span>
         <nav aria-label="Footer">
-          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/privacy">Privacy policy</Link>
           <a href={`mailto:${site.supportEmail}`}>Contact</a>
           <a href={playUrl}>Google Play</a>
         </nav>
-        <span>© {site.copyrightYear} Veil</span>
       </div>
     </footer>
   );

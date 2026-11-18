@@ -17,17 +17,13 @@ export default function PrivacyPage() {
       <main className="legal">
         <div className="wrap">
           <article>
-            <span className="kicker">Legal</span>
-            <h1>Privacy Policy</h1>
-            <p className="updated">Last updated: {site.privacyUpdated}</p>
+            <h1>Privacy policy</h1>
+            <p className="updated">Last updated {site.privacyUpdated}</p>
 
-            <div className="summary-box">
-              <p>
-                <strong>In short:</strong> your PIN and the list of apps you hide never leave your phone. Veil has no
-                servers and no accounts. The only data that leaves your device is what Google’s ad service needs to
-                show ads.
-              </p>
-            </div>
+            <p className="summary">
+              Your PIN and the list of apps you hide never leave your phone. Veil has no servers and no accounts. The
+              only data that leaves your device is what Google’s ad service needs to show ads.
+            </p>
 
             <p>
               This policy explains how <strong>{site.title}</strong> (“Veil”, “the app”), developed by{' '}

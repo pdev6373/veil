@@ -1,76 +1,123 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-/** Nav hairline once scrolled, scroll reveals, and the cursor glow on cards. */
-export function PageEffects() {
-  useEffect(() => {
-    const nav = document.getElementById('nav');
-    const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 8);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+const DEMO_PIN = '1284';
+const VAULT_TONES = ['#c98f7a', '#7d9bb8', '#93a98a', '#c9b27a', '#a08bc0', '#7fb0ab', '#b9879e', '#8a93b8'];
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const items = document.querySelectorAll<HTMLElement>('.reveal:not(.in)');
-    let io: IntersectionObserver | null = null;
-    if (reduced) {
-      items.forEach((el) => el.classList.add('in'));
-    } else {
-      // Anything already on screen animates in right away (no waiting on the observer).
-      const pending: HTMLElement[] = [];
-      let shown = 0;
-      items.forEach((el) => {
-        if (el.getBoundingClientRect().top < window.innerHeight * 0.92) {
-          el.style.transitionDelay = `${Math.min(shown++, 6) * 70}ms`;
-          el.classList.add('in');
-        } else {
-          pending.push(el);
-        }
-      });
-      io = new IntersectionObserver(
-        (entries) => {
-          entries
-            .filter((e) => e.isIntersecting)
-            .forEach((e, i) => {
-              const el = e.target as HTMLElement;
-              el.style.transitionDelay = `${Math.min(i, 6) * 70}ms`;
-              el.classList.add('in');
-              io?.unobserve(el);
-            });
-        },
-        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-      );
-      pending.forEach((el) => io?.observe(el));
-    }
+type Key = { label: string; kind: 'num' | 'fn' | 'op'; aria?: string };
+const KEYS: Key[] = [
+  { label: 'AC', kind: 'fn', aria: 'Clear' }, { label: '±', kind: 'fn', aria: 'Plus minus' }, { label: '%', kind: 'fn', aria: 'Percent' }, { label: '÷', kind: 'op', aria: 'Divide' },
+  { label: '7', kind: 'num' }, { label: '8', kind: 'num' }, { label: '9', kind: 'num' }, { label: '×', kind: 'op', aria: 'Multiply' },
+  { label: '4', kind: 'num' }, { label: '5', kind: 'num' }, { label: '6', kind: 'num' }, { label: '−', kind: 'op', aria: 'Minus' },
+  { label: '1', kind: 'num' }, { label: '2', kind: 'num' }, { label: '3', kind: 'num' }, { label: '+', kind: 'op', aria: 'Plus' },
+  { label: '0', kind: 'num' }, { label: '.', kind: 'num', aria: 'Decimal point' }, { label: '=', kind: 'op', aria: 'Equals' },
+];
 
-    const cards = document.querySelectorAll<HTMLElement>('.card');
-    const onMove = (e: PointerEvent) => {
-      const card = e.currentTarget as HTMLElement;
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      card.style.setProperty('--my', `${e.clientY - r.top}px`);
-    };
-    cards.forEach((c) => c.addEventListener('pointermove', onMove));
+const isOp = (c: string) => '+−×÷'.includes(c);
 
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      io?.disconnect();
-      cards.forEach((c) => c.removeEventListener('pointermove', onMove));
-    };
-  }, []);
-
-  return null;
+/** Left-to-right with × ÷ before + −. No eval(). */
+function evaluate(input: string): string {
+  const expr = input.startsWith('−') ? `0${input}` : input;
+  const tokens = expr.match(/(\d*\.?\d+|[+−×÷])/g);
+  if (!tokens) return '0';
+  const nums: number[] = [];
+  const ops: string[] = [];
+  tokens.forEach((t) => (isOp(t) ? ops.push(t) : nums.push(parseFloat(t))));
+  if (nums.length !== ops.length + 1) return 'Error';
+  for (let i = 0; i < ops.length; ) {
+    if (ops[i] === '×' || ops[i] === '÷') {
+      const r = ops[i] === '×' ? nums[i] * nums[i + 1] : nums[i] / nums[i + 1];
+      nums.splice(i, 2, r);
+      ops.splice(i, 1);
+    } else i++;
+  }
+  const total = ops.reduce((acc, op, i) => (op === '+' ? acc + nums[i + 1] : acc - nums[i + 1]), nums[0]);
+  if (!Number.isFinite(total)) return 'Error';
+  return String(Math.round(total * 1e8) / 1e8);
 }
 
-const CALC_SCRIPT = ['1', '12', '128', '1284', '1284 =', '', '24', '24×', '24×7', '168'];
+/** A working calculator. Typing the demo PIN then "=" opens the vault, exactly like the app. */
+export function TryCalculator() {
+  const [expr, setExpr] = useState('');
+  const [result, setResult] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
-/** The calculator card types a PIN, presses "=", then does a normal sum, in a loop. */
-export function CalcTyping() {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const id = setInterval(() => setI((n) => n + 1), 650);
-    return () => clearInterval(id);
-  }, []);
-  return <span>{CALC_SCRIPT[i % CALC_SCRIPT.length]}</span>;
+  const press = (k: Key) => {
+    if (k.label === 'AC') {
+      setExpr('');
+      setResult(null);
+      return;
+    }
+    if (k.label === '=') {
+      if (expr === DEMO_PIN) return setOpen(true);
+      if (!expr) return;
+      const clean = isOp(expr.slice(-1)) ? expr.slice(0, -1) : expr;
+      setResult(evaluate(clean));
+      return;
+    }
+    if (k.label === '±' || k.label === '%') {
+      if (!expr || isOp(expr.slice(-1))) return;
+      if (k.label === '±') setExpr(expr.startsWith('−') ? expr.slice(1) : `−${expr}`);
+      else setResult(evaluate(`${expr}÷100`));
+      return;
+    }
+
+    const base = result !== null && result !== 'Error' ? (k.kind === 'op' ? result : '') : expr;
+    setResult(null);
+    if (k.kind === 'op') {
+      if (!base) return;
+      setExpr(isOp(base.slice(-1)) ? base.slice(0, -1) + k.label : base + k.label);
+    } else if (base.length < 14) {
+      setExpr(base + k.label);
+    }
+  };
+
+  const shown = result ?? (expr || '0');
+
+  return (
+    <div className="calc">
+      <div className="display" aria-live="polite">
+        <div className="expr">{result !== null ? expr : ''}</div>
+        <div className="value" style={{ fontSize: shown.length > 9 ? 36 : undefined }}>
+          {shown}
+        </div>
+      </div>
+      <div className="keys">
+        {KEYS.map((k) => (
+          <button
+            key={k.label}
+            type="button"
+            className={[k.kind === 'op' && 'op', k.kind === 'fn' && 'fn', k.label === '0' && 'zero'].filter(Boolean).join(' ') || undefined}
+            aria-label={k.aria ?? k.label}
+            onClick={() => press(k)}
+          >
+            {k.label}
+          </button>
+        ))}
+      </div>
+
+      {open && (
+        <div className="vault-open" role="dialog" aria-label="Vault opened">
+          <div className="title">Vault</div>
+          <div className="sub">8 apps hidden</div>
+          <div className="apps">
+            {VAULT_TONES.map((c) => (
+              <i key={c} style={{ background: c }} />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setExpr('');
+              setResult(null);
+            }}
+          >
+            Lock again
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
