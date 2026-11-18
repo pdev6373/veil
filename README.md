@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Veil website
 
-## Getting Started
+The landing page, privacy policy and `app-ads.txt` for **Veil: Hide Apps & App Vault**. Built with Next.js 16 (App Router), and every page is prerendered as static.
 
-First, run the development server:
+| URL | Use it for |
+|---|---|
+| `/` | Play Console → Store listing → **Website** |
+| `/privacy` | Play Console → App content → **Privacy policy**, and `PRIVACY_POLICY_URL` in the app's `src/config.ts` |
+| `/app-ads.txt` | AdMob app verification |
+| `/sitemap.xml`, `/robots.txt` | Search engines (generated) |
 
+## Before deploying
+1. In **`lib/site.ts`**, set `supportEmail` and `developerName`. The developer name must match your Play developer account. If you changed the app's package name, update `packageName` too.
+2. In **`public/app-ads.txt`**, replace `pub-XXXXXXXXXXXXXXXX` with your AdMob publisher ID.
+
+On Vercel the site URL is detected automatically. Elsewhere, set the `NEXT_PUBLIC_SITE_URL` environment variable.
+
+## Develop
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy to Vercel
+```bash
+npx vercel --prod
+```
+Or push this repo to GitHub and import it at vercel.com/new. Add your custom domain later in Project → Settings → Domains. No code changes are needed.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Structure
+```
+app/            layout (font, metadata), page (landing), privacy/, sitemap, robots, icons, OG image
+components/     brand (logo sprite), chrome (nav, footer, Play badge), client (scroll effects, calculator), icons
+lib/site.ts     every value to fill in before launch
+public/         app-ads.txt, Google Play badge
+```
